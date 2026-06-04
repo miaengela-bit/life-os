@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>Life OS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0a;--surface:#141414;--surface2:#1e1e1e;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0ede8;--muted:rgba(240,237,232,0.45);--faint:rgba(240,237,232,0.15);--green:#a8d5a2;--green-bg:rgba(168,213,162,0.1);--purple:#c4b5f4;--purple-bg:rgba(196,181,244,0.1);--amber:#f0c070;--amber-bg:rgba(240,192,112,0.1);--coral:#f0a090;--coral-bg:rgba(240,160,144,0.1);--pink:#f0a8c8;--pink-bg:rgba(240,168,200,0.1);--blue:#90c0f0;--blue-bg:rgba(144,192,240,0.1);--teal:#80d0c0;--teal-bg:rgba(128,208,192,0.1);--serif:'DM Serif Display',serif;--sans:'DM Sans',sans-serif;--r:14px;--r-sm:8px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px}
+body{min-height:100dvh;padding-bottom:84px}
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.94);backdrop-filter:blur(20px);border-top:0.5px solid var(--border2);display:flex;align-items:stretch;height:68px;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:10px;color:var(--muted);letter-spacing:.04em;font-weight:500;text-transform:uppercase;border:none;background:none;transition:color .2s;-webkit-tap-highlight-color:transparent}
+.nav-item.active{color:var(--text)}
+.nav-item svg{width:20px;height:20px;stroke-width:1.5}
+/* VIEWS */
+.view{display:none;padding:0 0 1.5rem;animation:fadeUp .22s ease}
+.view.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+/* HEADER */
+.page-header{padding:56px 20px 16px;display:flex;justify-content:space-between;align-items:flex-end}
+.page-title{font-family:var(--serif);font-size:30px;line-height:1.1}
+.page-title em{font-style:italic;color:var(--muted)}
+.page-sub{font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:.04em;text-transform:uppercase}
+/* CARDS */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:16px;margin:0 16px 10px}
+.card-sm{padding:12px 14px}
+.card-title{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+/* DATE STRIP */
+.date-scroll{display:flex;gap:8px;padding:0 16px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px}
+.date-scroll::-webkit-scrollbar{display:none}
+.date-pill{flex-shrink:0;width:48px;height:64px;border-radius:24px;border:0.5px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.date-pill.today{border-color:var(--text);background:var(--text)}
+.date-pill.selected:not(.today){border-color:var(--purple);background:var(--purple-bg)}
+.dp-day{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.dp-num{font-size:20px;font-family:var(--serif);line-height:1}
+.date-pill.today .dp-day,.date-pill.today .dp-num{color:var(--bg)}
+.dp-dot{width:4px;height:4px;border-radius:50%;background:var(--green);margin-top:2px;opacity:0}
+.date-pill.has-tasks .dp-dot{opacity:1}
+/* WEIGHT BANNER */
+.weight-banner{margin:0 16px 10px;background:var(--amber-bg);border:0.5px solid rgba(240,192,112,0.25);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.wb-icon{font-size:22px;flex-shrink:0}
+.wb-body{flex:1}
+.wb-title{font-size:13px;font-weight:500;color:var(--amber)}
+.wb-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.wb-btn{font-size:12px;padding:6px 14px;border-radius:20px;border:0.5px solid rgba(240,192,112,0.4);background:rgba(240,192,112,0.12);color:var(--amber);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+/* JOURNAL PROMPT */
+.journal-prompt{margin:0 16px 10px;background:var(--purple-bg);border:0.5px solid rgba(196,181,244,0.2);border-radius:var(--r);padding:14px 16px}
+.jp-label{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);margin-bottom:6px}
+.jp-text{font-family:var(--serif);font-size:16px;color:var(--text);line-height:1.4}
+.jp-action{font-size:12px;color:var(--muted);margin-top:6px}
+/* TASK GROUPS */
+.task-group{margin:0 16px 10px}
+.tg-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:0 2px}
+.tg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tg-name{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.tg-count{font-size:11px;color:var(--faint);margin-left:auto}
+.task-item{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:flex-start;gap:12px;margin-bottom:6px;cursor:pointer;transition:opacity .2s;-webkit-tap-highlight-color:transparent}
+.task-item.done{opacity:.38}
+.task-item:active{transform:scale(0.985)}
+.task-check{width:22px;height:22px;border-radius:50%;flex-shrink:0;margin-top:1px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.task-item.done .task-check{background:var(--green);border-color:var(--green)}
+.task-check svg{display:none}
+.task-item.done .task-check svg{display:block;width:12px;height:12px;stroke:#0a0a0a;stroke-width:2.5}
+.task-body{flex:1;min-width:0}
+.task-name{font-size:14px;line-height:1.4}
+.task-item.done .task-name{text-decoration:line-through}
+.task-detail{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+.task-duration{font-size:11px;color:var(--faint);margin-top:4px}
+/* REFLECTION PANEL — slides open after check */
+.reflection-panel{margin-top:6px;padding:10px 12px;background:var(--surface2);border-radius:var(--r-sm);display:none;animation:fadeUp .2s ease}
+.reflection-panel.open{display:block}
+.rp-label{font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.04em}
+.rp-input{width:100%;background:transparent;border:none;border-bottom:0.5px solid var(--border2);padding:4px 0 6px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;line-height:1.4;resize:none;min-height:36px}
+.rp-save{font-size:12px;padding:5px 14px;border-radius:20px;border:0.5px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;margin-top:8px;-webkit-tap-highlight-color:transparent}
+/* WEEK VIEW */
+.rings-row{display:flex;gap:8px;padding:0 16px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px}
+.rings-row::-webkit-scrollbar{display:none}
+.ring-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.ring-svg{width:52px;height:52px}
+.ring-label{font-size:10px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.week-header-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 16px;margin-bottom:4px}
+.wh-day{text-align:center;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:4px 0}
+.week-grid-wrap{padding:0 16px;margin-bottom:0}
+.week-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.week-cell{aspect-ratio:1;border-radius:var(--r-sm);border:0.5px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;cursor:pointer;transition:transform .15s}
+.week-cell:active{transform:scale(0.93)}
+.week-cell.run{background:var(--green-bg);border-color:rgba(168,213,162,0.25)}
+.week-cell.strength{background:var(--purple-bg);border-color:rgba(196,181,244,0.25)}
+.week-cell.rest{background:var(--surface)}
+.week-cell.active-rest{background:var(--amber-bg);border-color:rgba(240,192,112,0.25)}
+.wc-icon{font-size:16px}
+.wc-text{font-size:9px;color:var(--muted);text-align:center;line-height:1.2}
+.week-cell.today-cell{border-color:var(--text)!important}
+.habit-row{display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.habit-row:last-child{border-bottom:none}
+.habit-name{font-size:13px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px}
+.habit-dots{display:flex;gap:4px}
+.habit-dot{width:26px;height:26px;border-radius:6px;border:0.5px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:all .15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.habit-dot.done{background:var(--green);border-color:var(--green);color:#0a0a0a}
+.habit-dot:active{transform:scale(0.88)}
+/* MONTH VIEW */
+.month-nav-row{display:flex;align-items:center;justify-content:space-between;padding:0 20px 14px}
+.month-nav-btn{background:none;border:0.5px solid var(--border2);border-radius:20px;padding:6px 14px;color:var(--text);font-family:var(--sans);font-size:13px;cursor:pointer}
+.month-name-h{font-family:var(--serif);font-size:22px}
+.mc-header{display:grid;grid-template-columns:repeat(7,1fr);padding:0 16px;margin-bottom:4px}
+.mc-dh{text-align:center;font-size:10px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;padding:4px 0}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 16px;margin-bottom:14px}
+.mc-day{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
+.mc-day.empty{cursor:default}
+.mc-day.today-cal{background:var(--text);color:var(--bg);border-radius:50%}
+.mc-day.has-data::after{content:'';width:4px;height:4px;border-radius:50%;background:var(--green);position:absolute;bottom:1px}
+.mc-day.weight-day::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--amber);position:absolute;top:1px}
+.area-scores{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px;margin-bottom:12px}
+.score-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:14px}
+.sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.sc-name{font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase}
+.sc-score{font-family:var(--serif);font-size:24px;line-height:1}
+.sc-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
+.sc-fill{height:100%;border-radius:2px;transition:width .6s ease}
+/* WEIGHT CHART */
+.weight-chart-wrap{padding:0 16px;margin-bottom:12px}
+.wc-chart{width:100%;height:100px;display:block}
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
+.modal-overlay.hidden{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-family:var(--serif);font-size:22px;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.modal-input{width:100%;background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--r-sm);padding:14px;color:var(--text);font-family:var(--sans);font-size:22px;font-family:var(--serif);outline:none;text-align:center;margin-bottom:12px}
+.modal-btn{width:100%;padding:14px;border-radius:var(--r-sm);border:none;background:var(--text);color:var(--bg);font-family:var(--sans);font-size:15px;font-weight:500;cursor:pointer;margin-bottom:8px}
+.modal-btn-sec{width:100%;padding:12px;border-radius:var(--r-sm);border:0.5px solid var(--border2);background:transparent;color:var(--muted);font-family:var(--sans);font-size:14px;cursor:pointer}
+/* SETTINGS */
+.settings-section{padding:0 16px;margin-bottom:18px}
+.settings-title{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;padding:0 2px}
+.setting-row{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.sr-label{font-size:14px}
+.sr-value{font-size:13px;color:var(--muted)}
+.sr-input{background:none;border:none;color:var(--text);font-family:var(--sans);font-size:13px;text-align:right;width:130px;outline:none}
+/* SPRINT TAG */
+.sprint-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500}
+/* XP BAR */
+.xp-strip{margin:0 16px 12px}
+.xp-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+.xp-track{height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:2px;transition:width .5s ease}
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px;margin-bottom:12px}
+.stat-box{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
+.stat-num{font-family:var(--serif);font-size:28px;line-height:1}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+/* TOAST */
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--surface2);border:0.5px solid var(--border2);border-radius:20px;padding:8px 18px;font-size:13px;opacity:0;pointer-events:none;transition:all .2s;white-space:nowrap;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ════ DAY VIEW ════ -->
+<div class="view active" id="view-day">
+  <div class="page-header">
+    <div>
+      <div class="page-title" id="day-title">Today</div>
+      <div class="page-sub" id="day-sub">Day 1 of 90</div>
+    </div>
+    <div class="sprint-tag" style="background:var(--purple-bg);color:var(--purple);border:0.5px solid rgba(196,181,244,0.2)" id="sprint-tag">Sprint 1</div>
+  </div>
+  <div class="date-scroll" id="date-scroll"></div>
+  <div class="xp-strip">
+    <div class="xp-row"><span id="level-label">Lv.1 — Initiate</span><span id="xp-label">0 XP</span></div>
+    <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+  </div>
+  <!-- weight banner (Monday only) -->
+  <div class="weight-banner" id="weight-banner" style="display:none">
+    <div class="wb-icon">⚖️</div>
+    <div class="wb-body">
+      <div class="wb-title">Monday check-in</div>
+      <div class="wb-sub" id="weight-banner-sub">Log your weight for this week</div>
+    </div>
+    <button class="wb-btn" onclick="openWeightModal()">Log it →</button>
+  </div>
+  <div class="journal-prompt">
+    <div class="jp-label">✦ Today's journal prompt · 10 min</div>
+    <div class="jp-text" id="journal-prompt-text">What does my life look like in 90 days?</div>
+    <div class="jp-action">Open your notebook. Write by hand. No phone.</div>
+  </div>
+  <div id="day-tasks-container"></div>
+</div>
+
+<!-- ════ WEEK VIEW ════ -->
+<div class="view" id="view-week">
+  <div class="page-header">
+    <div><div class="page-title">This <em>week</em></div><div class="page-sub" id="week-sub">Week 1 of 13</div></div>
+  </div>
+  <div class="rings-row" id="rings-row"></div>
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">Training this week</div>
+    <div class="week-header-row"><div class="wh-day">M</div><div class="wh-day">T</div><div class="wh-day">W</div><div class="wh-day">T</div><div class="wh-day">F</div><div class="wh-day">S</div><div class="wh-day">S</div></div>
+    <div class="week-grid-wrap"><div class="week-row" id="training-row"></div></div>
+    <div id="training-legend" style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Daily habits · this week</div>
+    <div id="weekly-habits"></div>
+  </div>
+  <div class="card card-sm">
+    <div class="card-title">Sunday review</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px">What did I actually do this week? What slipped? What's the one thing to fix next week?</div>
+    <textarea id="weekly-note" placeholder="Write here..." style="width:100%;background:var(--surface2);border:0.5px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--sans);font-size:13px;resize:none;min-height:72px;outline:none;line-height:1.5" onchange="saveWeeklyNote(this.value)"></textarea>
+  </div>
+</div>
+
+<!-- ════ MONTH VIEW ════ -->
+<div class="view" id="view-month">
+  <div class="page-header">
+    <div><div class="page-title">The <em>month</em></div><div class="page-sub" id="month-sub">Sprint 1</div></div>
+  </div>
+  <div class="month-nav-row">
+    <button class="month-nav-btn" onclick="changeMonth(-1)">← Prev</button>
+    <div class="month-name-h" id="month-name">June</div>
+    <button class="month-nav-btn" onclick="changeMonth(1)">Next →</button>
+  </div>
+  <div class="mc-header"><div class="mc-dh">M</div><div class="mc-dh">T</div><div class="mc-dh">W</div><div class="mc-dh">T</div><div class="mc-dh">F</div><div class="mc-dh">S</div><div class="mc-dh">S</div></div>
+  <div class="mc-grid" id="month-grid"></div>
+  <!-- weight chart -->
+  <div class="weight-chart-wrap">
+    <div class="card-title" style="padding:0 0 8px">Weight trend</div>
+    <canvas class="wc-chart" id="weight-canvas"></canvas>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:center" id="weight-chart-note">Log weight every Monday to see your trend</div>
+  </div>
+  <div style="padding:0 16px 8px"><div class="card-title" style="padding:0;margin-bottom:10px">Area progress</div></div>
+  <div class="area-scores" id="area-scores"></div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="stat-streak">0</div><div class="stat-label">day streak</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-done">0</div><div class="stat-label">tasks done</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-day">1</div><div class="stat-label">of 90 days</div></div>
+  </div>
+</div>
+
+<!-- ════ SETTINGS VIEW ════ -->
+<div class="view" id="view-settings">
+  <div class="page-header"><div><div class="page-title">Your <em>setup</em></div><div class="page-sub">Personalise & connect</div></div></div>
+  <div class="settings-section">
+    <div class="settings-title">Challenge</div>
+    <div class="setting-row"><span class="sr-label">Start date</span><input type="date" class="sr-input" id="start-date-input" onchange="saveStartDate(this.value)"></div>
+    <div class="setting-row"><span class="sr-label">Current day</span><span class="sr-value" id="current-day-label">Day 1</span></div>
+    <div class="setting-row"><span class="sr-label">Current sprint</span><span class="sr-value" id="current-sprint-label">Sprint 1</span></div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">Weekly schedule</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5">Paste your work/uni schedule. The app uses this to know your free blocks.</div>
+    <textarea id="schedule-input" placeholder="Mon: work 9-17&#10;Tue: uni 10-16, work 18-22&#10;Wed: free&#10;Thu: work 14-22&#10;Fri: uni 9-13&#10;Sat: free&#10;Sun: free" style="width:100%;background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--r);padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:13px;resize:none;min-height:130px;outline:none;line-height:1.6" onchange="state.schedule=this.value;save()"></textarea>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">Area scores · update weekly</div>
+    <div id="area-sliders"></div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">Connect apps</div>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+        <span class="sr-label">Strava</span>
+        <span style="font-size:12px;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--muted)">Coming soon</span>
+      </div>
+      <span style="font-size:12px;color:var(--muted)">Auto-log your runs. Needs a small backend — ask me to build it.</span>
+    </div>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+        <span class="sr-label">Notion calendar</span>
+        <span style="font-size:12px;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--muted)">Coming soon</span>
+      </div>
+      <span style="font-size:12px;color:var(--muted)">Paste your Notion schedule above for now.</span>
+    </div>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+        <span class="sr-label">Apple Health / Steps</span>
+        <span style="font-size:12px;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--muted)">Via Shortcut</span>
+      </div>
+      <span style="font-size:12px;color:var(--muted)">I can build an iOS Shortcut that reads your steps and pushes them here.</span>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">Your 8 rules</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:3px"><span style="font-size:13px;font-weight:500">No phone first 30 min</span><span style="font-size:12px;color:var(--muted)">Journal before you scroll.</span></div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:3px"><span style="font-size:13px;font-weight:500">5-min room reset every night</span><span style="font-size:12px;color:var(--muted)">Before you sit down in the evening.</span></div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:3px"><span style="font-size:13px;font-weight:500">In bed by 22:00</span><span style="font-size:12px;color:var(--muted)">Phone in another room from 21:00.</span></div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:3px"><span style="font-size:13px;font-weight:500">Track every euro spent</span><span style="font-size:12px;color:var(--muted)">Visibility before control.</span></div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:3px"><span style="font-size:13px;font-weight:500">Protein at every meal</span><span style="font-size:12px;color:var(--muted)">Eggs, yogurt, chicken, lentils. Every time.</span></div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:3px"><span style="font-size:13px;font-weight:500">One planned social moment per week</span><span style="font-size:12px;color:var(--muted)">Schedule it like an appointment.</span></div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:3px"><span style="font-size:13px;font-weight:500">Side hustle before social media</span><span style="font-size:12px;color:var(--muted)">Even 20 minutes counts.</span></div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:3px"><span style="font-size:13px;font-weight:500">Fall off → reset, no spiral</span><span style="font-size:12px;color:var(--muted)">One skipped day is data, not failure.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchView('day',this)">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5"/><path d="M3 9h18M9 21V9" stroke-width="1.5"/></svg>Today
+  </button>
+  <button class="nav-item" onclick="switchView('week',this)">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 12h18M3 6h18M3 18h18" stroke-width="1.5"/></svg>Week
+  </button>
+  <button class="nav-item" onclick="switchView('month',this)">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5"/><path d="M3 9h18M8 2v4M16 2v4" stroke-width="1.5"/></svg>Month
+  </button>
+  <button class="nav-item" onclick="switchView('settings',this)">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="3" stroke-width="1.5"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-width="1.5"/></svg>Setup
+  </button>
+</nav>
+
+<!-- WEIGHT MODAL -->
+<div class="modal-overlay hidden" id="weight-modal" onclick="closeWeightModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Monday check-in ⚖️</div>
+    <div class="modal-sub" id="weight-modal-sub">Log your weight. This is data, not a judgement. Tracking it weekly is the only way to see the trend clearly.</div>
+    <input class="modal-input" type="number" id="weight-input" placeholder="62.4" step="0.1" min="30" max="200">
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px">kg · your last entry: <span id="last-weight-display">none yet</span></div>
+    <button class="modal-btn" onclick="saveWeight()">Save weight</button>
+    <button class="modal-btn-sec" onclick="closeWeightModal()">Skip this week</button>
+  </div>
+</div>
+
+<!-- REFLECTION MODAL — pops after task check -->
+<div class="modal-overlay hidden" id="reflection-modal" onclick="closeReflectionModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="reflection-modal-title">Nice work ✓</div>
+    <div class="modal-sub" id="reflection-modal-sub">What did you actually do? A quick note makes this real.</div>
+    <textarea id="reflection-input" placeholder="e.g. cleared my desk and sorted the wardrobe pile. Feels so much better." style="width:100%;background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:14px;resize:none;min-height:90px;outline:none;line-height:1.5;margin-bottom:12px"></textarea>
+    <button class="modal-btn" onclick="saveReflection()">Save note</button>
+    <button class="modal-btn-sec" onclick="closeReflectionModal()">No note, just close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════
+const AREAS=[
+  {id:'body',     name:'Body',         color:'var(--green)', score:45},
+  {id:'mind',     name:'Mind',         color:'var(--purple)',score:30},
+  {id:'hustle',   name:'Side hustle',  color:'var(--coral)', score:10},
+  {id:'money',    name:'Money',        color:'var(--amber)', score:20},
+  {id:'social',   name:'Relationships',color:'var(--pink)',  score:50},
+  {id:'discipline',name:'Discipline',  color:'var(--blue)',  score:25},
+  {id:'home',     name:'Home',         color:'var(--teal)',  score:15},
+];
+const HABITS=[
+  {id:'no_phone_am',  name:'No phone first 30 min', area:'discipline'},
+  {id:'journal',      name:'Morning journal',        area:'mind'},
+  {id:'bed_made',     name:'Made bed',               area:'home'},
+  {id:'run_workout',  name:'Run or workout',         area:'body'},
+  {id:'real_meal',    name:'Cooked real meal',       area:'body'},
+  {id:'room_reset',   name:'Evening room reset',     area:'home'},
+  {id:'bed_22',       name:'Bed by 22:00',           area:'discipline'},
+];
+const JOURNAL_PROMPTS=[
+  'What does my life look like in 90 days? Write it in detail.',
+  'What am I actually proud of right now, even if it\'s small?',
+  'What is my biggest daily time-waster — and why do I keep doing it?',
+  'If I had no fear of failure, what would I start today?',
+  'What version of me would wake up tomorrow feeling proud?',
+  'What\'s one thing I keep saying I\'ll do but haven\'t? Why?',
+  'How did I feel in my body this week? What does it need?',
+  'What does "feeling lost" actually mean for me? What\'s missing?',
+  'Write about a recent moment when you felt fully yourself.',
+  'What habit, if I did it every day for 90 days, would change everything?',
+  'What am I avoiding, and why?',
+  'What would I do with my time if money wasn\'t an issue?',
+  'How am I treating the people I love this week?',
+  'What does my dream Monday morning look like, exactly?',
+];
+const TRAINING={
+  s1:[
+    {type:'strength',icon:'💪',text:'Strength A'},
+    {type:'run',     icon:'🏃',text:'Easy 25m'},
+    {type:'rest',    icon:'·', text:'Rest'},
+    {type:'strength',icon:'💪',text:'Strength B'},
+    {type:'run',     icon:'🏃',text:'Tempo 20m'},
+    {type:'active-rest',icon:'○',text:'Active rest'},
+    {type:'run',     icon:'🏃',text:'Long 40m'},
+  ],
+  s2:[
+    {type:'strength',icon:'💪',text:'Strength A'},
+    {type:'run',     icon:'🏃',text:'Intervals'},
+    {type:'rest',    icon:'·', text:'Rest'},
+    {type:'strength',icon:'💪',text:'Strength B'},
+    {type:'run',     icon:'🏃',text:'Easy 35m'},
+    {type:'run',     icon:'🏃',text:'Tempo 25m'},
+    {type:'run',     icon:'🏃',text:'Long 75m'},
+  ],
+  s3:[
+    {type:'strength',icon:'💪',text:'Strength A'},
+    {type:'run',     icon:'🏃',text:'Intervals+'},
+    {type:'rest',    icon:'·', text:'Easy 20m'},
+    {type:'strength',icon:'💪',text:'Strength B'},
+    {type:'run',     icon:'🏃',text:'Tempo 30m'},
+    {type:'run',     icon:'🏃',text:'Easy 35m'},
+    {type:'run',     icon:'🏃',text:'Long 90m'},
+  ],
+};
+// Tasks: each can have reflectionPrompt to trigger modal on completion
+const DAILY_TASKS={
+  0:[
+    {area:'home',name:'20-min room blitz',detail:'Bin bag, floor clear, surfaces wiped. Time yourself.',duration:'20 min',xp:20,reflectionPrompt:'What did you actually clear or tidy? What area feels best now?'},
+    {area:'mind',name:'Journal: What does my life look like in 90 days?',detail:'Handwrite it. Be specific — clean room, runs, side hustle, dinners.',duration:'10 min',xp:15},
+    {area:'money',name:'List every subscription and recurring expense',detail:'Open your bank app. Write them all down.',duration:'15 min',xp:15,reflectionPrompt:'What surprised you? Anything to cancel?'},
+    {area:'discipline',name:'Set phone screen-time limit to 90 min today',detail:'Settings → Screen Time or Digital Wellbeing.',duration:'5 min',xp:10},
+    {area:'body',name:'Run your usual route — note distance and time',detail:'Establishing your baseline. Just run and record.',duration:'30 min',xp:25,reflectionPrompt:'Distance, time, how did it feel?'},
+  ],
+  1:[
+    {area:'home',name:'5-min tidy before bed',detail:'Set a timer. Floor clear. Clothes folded or in laundry.',duration:'5 min',xp:10,reflectionPrompt:'What did you do in 5 minutes?'},
+    {area:'mind',name:'Journal: What am I actually proud of right now?',detail:'Not what you want to be proud of. What\'s real, even if small.',duration:'10 min',xp:15},
+    {area:'money',name:'Simple budget: income vs fixed costs vs spending money',detail:'Three columns. Income from 3 jobs. Fixed costs. What\'s left = free money.',duration:'20 min',xp:20,reflectionPrompt:'What\'s your actual free money per month after fixed costs?'},
+    {area:'body',name:'Cook one real meal — no delivery',detail:'Eggs, pasta, stir fry. The habit is cooking, not the recipe.',duration:'20 min',xp:15,reflectionPrompt:'What did you make?'},
+  ],
+  2:[
+    {area:'hustle',name:'Spend 30 min: what could I actually sell or offer?',detail:'Skills, experience from 3 jobs, Business Analytics. Write 5 ideas, no filter.',duration:'30 min',xp:25,reflectionPrompt:'What are your 5 ideas? Which one feels most real?'},
+    {area:'mind',name:'Journal: What is my biggest daily time-waster?',detail:'Honest answer only. Usually emotional avoidance. Name it.',duration:'10 min',xp:15},
+    {area:'discipline',name:'Move your phone charger out of your bedroom',detail:'The single most effective way to stop night scrolling. Do it now.',duration:'2 min',xp:20},
+    {area:'body',name:'Run or workout class',detail:'Your call. Just move. Track it.',duration:'30 min',xp:25,reflectionPrompt:'What did you do? How did it feel?'},
+    {area:'social',name:'Text one friend to make actual plans',detail:'Not "we should hang out." Pick a day and place. Send it now.',duration:'2 min',xp:10,reflectionPrompt:'Who did you text, and what are you planning?'},
+  ],
+  3:[
+    {area:'home',name:'Pick one area still bothering you — sort it in 10 min',detail:'Desk, wardrobe, floor corner. Just that one spot.',duration:'10 min',xp:15,reflectionPrompt:'Which area did you tackle? What does it look like now?'},
+    {area:'mind',name:'Journal: If I had no fear of failure, what would I start?',detail:'Let it be ambitious. This is private. Write the real answer.',duration:'10 min',xp:15},
+    {area:'money',name:'Last 7 days of spending — label each: need / want / waste',detail:'Not judging. Just seeing. You can\'t fix the pattern until you name it.',duration:'15 min',xp:20,reflectionPrompt:'How much went to "want" and "waste" this week? Any surprises?'},
+    {area:'hustle',name:'Pick ONE side hustle idea and research it for 20 min',detail:'Google who does it, what they charge. Getting real information.',duration:'20 min',xp:20,reflectionPrompt:'Which idea? What did you find?'},
+  ],
+  4:[
+    {area:'body',name:'Run — push pace slightly more than Monday',detail:'Not a lot. 10% harder. Building, not sprinting into injury.',duration:'30 min',xp:25,reflectionPrompt:'Distance, time, pace compared to Monday?'},
+    {area:'mind',name:'Journal: What version of me wakes up tomorrow feeling proud?',detail:'Write your dream morning in detail. This becomes your compass.',duration:'10 min',xp:15},
+    {area:'discipline',name:'Check screen time stats for the week',detail:'No guilt. Just data. Write the number down.',duration:'5 min',xp:10,reflectionPrompt:'What was your total screen time this week? What app took the most?'},
+    {area:'social',name:'Make a dinner plan with your boyfriend this weekend',detail:'Cook together, order in properly, go out. Something intentional.',duration:'5 min',xp:10,reflectionPrompt:'What did you plan, and when?'},
+  ],
+  5:[
+    {area:'home',name:'Full Saturday reset: 45-min deep clean',detail:'Floors, bathroom, kitchen, room. Put on music. Non-negotiable every Saturday.',duration:'45 min',xp:30,reflectionPrompt:'How does the space feel now? What took the longest?'},
+    {area:'hustle',name:'90-min side hustle session — first real work',detail:'One concrete output by the end: a post, offer draft, template, pricing.',duration:'90 min',xp:40,reflectionPrompt:'What did you actually produce in this session?'},
+    {area:'money',name:'Set a savings target this month — even €50 — transfer it now',detail:'Separate account or a jar. Starting small is starting.',duration:'10 min',xp:20,reflectionPrompt:'How much did you set aside? Where?'},
+    {area:'body',name:'Batch cook two meals for the week ahead',detail:'Even one pot. You\'ll eat better on busy days if food is already made.',duration:'40 min',xp:20,reflectionPrompt:'What did you cook?'},
+  ],
+  6:[
+    {area:'mind',name:'Weekly review: 15-min journal',detail:'Not what you planned. What happened. Wins, skips, one thing to fix.',duration:'15 min',xp:20,reflectionPrompt:'What was your biggest win this week? What will you fix next week?'},
+    {area:'discipline',name:'Plan next week: 3 priorities per day in your notes app',detail:'Three things per day max. The most important things.',duration:'10 min',xp:15,reflectionPrompt:'What are your top 3 priorities for next week overall?'},
+    {area:'social',name:'Dinner with your boyfriend — phone face-down, be present',detail:'This was in your vision. Week 1, day 7. Sit down. Eat properly.',duration:'evening',xp:15,reflectionPrompt:'How was it? What did you talk about?'},
+    {area:'home',name:'Lay out Monday\'s outfit and set alarm for 07:00',detail:'Priming tomorrow-you to win.',duration:'5 min',xp:10},
+  ],
+};
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let state=JSON.parse(localStorage.getItem('lifeos2')||'{}');
+const D={startDate:new Date().toISOString().slice(0,10),doneTasks:{},reflections:{},habits:{},areaScores:{},weights:{},schedule:'',weeklyNotes:{}};
+Object.keys(D).forEach(k=>{if(!(k in state))state[k]=D[k]});
+AREAS.forEach(a=>{if(!(a.id in state.areaScores))state.areaScores[a.id]=a.score});
+function save(){localStorage.setItem('lifeos2',JSON.stringify(state))}
+
+// ═══════════════════════════════════════════
+//  DATE HELPERS
+// ═══════════════════════════════════════════
+const today=new Date(); today.setHours(0,0,0,0);
+let viewMonth={y:today.getFullYear(),m:today.getMonth()};
+let selectedDate=new Date(today);
+let pendingReflection=null; // {dkey, taskIdx, taskName}
+
+function dkey(d){return d.toISOString().slice(0,10)}
+function dayNum(d){const s=new Date(state.startDate);s.setHours(0,0,0,0);return Math.floor((d-s)/86400000)+1}
+function sprint(d){const n=dayNum(d);return n<=30?1:n<=60?2:3}
+function dow(d){return(d.getDay()+6)%7} // Mon=0
+
+// ═══════════════════════════════════════════
+//  DAY VIEW
+// ═══════════════════════════════════════════
+function buildDateStrip(){
+  const el=document.getElementById('date-scroll');el.innerHTML='';
+  for(let i=-3;i<=7;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const isToday=i===0, isSel=dkey(d)===dkey(selectedDate);
+    const hasDone=Object.keys(state.doneTasks).some(k=>k.startsWith(dkey(d)));
+    const pill=document.createElement('div');
+    pill.className='date-pill'+(isToday?' today':'')+(isSel&&!isToday?' selected':'')+(hasDone?' has-tasks':'');
+    const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    pill.innerHTML=`<div class="dp-day">${days[dow(d)]}</div><div class="dp-num">${d.getDate()}</div><div class="dp-dot"></div>`;
+    pill.onclick=()=>{selectedDate=new Date(d);buildDateStrip();buildDayView()};
+    el.appendChild(pill);
+  }
+}
+
+function buildDayView(){
+  const d=selectedDate;
+  const isToday=dkey(d)===dkey(today);
+  const wday=dow(d);
+  const dn=dayNum(d);
+  const sp=sprint(d);
+  document.getElementById('day-title').textContent=isToday?'Today':d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+  document.getElementById('day-sub').textContent=`Day ${dn} of 90`;
+  document.getElementById('sprint-tag').textContent=`Sprint ${sp}`;
+
+  // weight banner — show on Mondays if not logged this week
+  const isMonday=wday===0;
+  const weightBanner=document.getElementById('weight-banner');
+  if(isMonday&&isToday){
+    const wk=getWeekKey(d);
+    const alreadyLogged=!!state.weights[wk];
+    weightBanner.style.display=alreadyLogged?'none':'flex';
+    const lastEntries=Object.entries(state.weights).sort((a,b)=>a[0]<b[0]?-1:1);
+    const lastW=lastEntries.length?lastEntries[lastEntries.length-1][1]:null;
+    document.getElementById('weight-banner-sub').textContent=alreadyLogged?`Logged: ${state.weights[wk]} kg`:(lastW?`Last week: ${lastW} kg`:'First entry this challenge');
+  } else { weightBanner.style.display='none'; }
+
+  // journal prompt
+  document.getElementById('journal-prompt-text').textContent=JOURNAL_PROMPTS[(dn-1)%JOURNAL_PROMPTS.length];
+
+  // XP
+  const totalXp=Object.keys(state.doneTasks).length*15;
+  const lvl=totalXp<150?1:totalXp<400?2:totalXp<800?3:totalXp<1400?4:5;
+  const lvlNames=['','Initiate','Grinder','Locked In','Elite','Apex'];
+  const lvlThresh=[0,150,400,800,1400,2200];
+  const pct=Math.min(100,Math.round(((totalXp-lvlThresh[lvl-1])/(lvlThresh[lvl]-lvlThresh[lvl-1]))*100));
+  document.getElementById('level-label').textContent=`Lv.${lvl} — ${lvlNames[lvl]}`;
+  document.getElementById('xp-label').textContent=`${totalXp} XP`;
+  document.getElementById('xp-fill').style.width=pct+'%';
+
+  // tasks
+  const tasks=DAILY_TASKS[wday]||[];
+  const dk=dkey(d);
+  const grouped={};
+  tasks.forEach((t,i)=>{if(!grouped[t.area])grouped[t.area]=[];grouped[t.area].push({...t,idx:i})});
+
+  const container=document.getElementById('day-tasks-container');container.innerHTML='';
+  Object.entries(grouped).forEach(([areaId,list])=>{
+    const done=list.filter(t=>state.doneTasks[dk+':'+t.idx]).length;
+    const areaColor=AREAS.find(a=>a.id===areaId)?.color||'var(--muted)';
+    const areaName=AREAS.find(a=>a.id===areaId)?.name||areaId;
+    const grp=document.createElement('div');grp.className='task-group';
+    grp.innerHTML=`<div class="tg-header"><div class="tg-dot" style="background:${areaColor}"></div><div class="tg-name">${areaName}</div><div class="tg-count">${done}/${list.length}</div></div>`;
+    list.forEach(t=>{
+      const isDone=!!state.doneTasks[dk+':'+t.idx];
+      const hasNote=!!state.reflections[dk+':'+t.idx];
+      const item=document.createElement('div');item.className='task-item'+(isDone?' done':'');
+      item.innerHTML=`<div class="task-check"><svg viewBox="0 0 14 14" fill="none"><polyline points="2,7 6,11 12,3"/></svg></div><div class="task-body"><div class="task-name">${t.name}</div><div class="task-detail">${t.detail}</div><div class="task-duration">${t.duration}${hasNote?' · <span style="color:var(--purple);font-size:11px">note saved</span>':''}</div></div>`;
+      item.onclick=()=>toggleTask(dk,t,item);
+      grp.appendChild(item);
+    });
+    container.appendChild(grp);
+  });
+}
+
+function toggleTask(dk,t,el){
+  const k=dk+':'+t.idx;
+  if(state.doneTasks[k]){
+    delete state.doneTasks[k];
+    save();buildDayView();return;
+  }
+  state.doneTasks[k]=true;save();
+  showToast(`+${t.xp||15} XP`);
+  // if task has a reflection prompt, open modal
+  if(t.reflectionPrompt){
+    pendingReflection={dk,taskIdx:t.idx,taskName:t.name,prompt:t.reflectionPrompt};
+    document.getElementById('reflection-modal-title').textContent=t.name;
+    document.getElementById('reflection-modal-sub').textContent=t.reflectionPrompt;
+    document.getElementById('reflection-input').value=state.reflections[dk+':'+t.idx]||'';
+    document.getElementById('reflection-modal').classList.remove('hidden');
+  } else { buildDayView(); }
+}
+
+function saveReflection(){
+  if(!pendingReflection)return;
+  const val=document.getElementById('reflection-input').value.trim();
+  if(val) state.reflections[pendingReflection.dk+':'+pendingReflection.taskIdx]=val;
+  save();closeReflectionModal();buildDayView();
+}
+function closeReflectionModal(e){
+  if(e&&e.target!==document.getElementById('reflection-modal'))return;
+  document.getElementById('reflection-modal').classList.add('hidden');
+  pendingReflection=null;buildDayView();
+}
+
+// ═══════════════════════════════════════════
+//  WEIGHT
+// ═══════════════════════════════════════════
+function getWeekKey(d){
+  const mon=new Date(d);mon.setDate(d.getDate()-dow(d));return dkey(mon);
+}
+function openWeightModal(){
+  const wk=getWeekKey(today);
+  const lastEntries=Object.entries(state.weights).sort((a,b)=>a[0]<b[0]?-1:1);
+  const lastW=lastEntries.length?lastEntries[lastEntries.length-1][1]:null;
+  document.getElementById('last-weight-display').textContent=lastW?`${lastW} kg`:'none yet';
+  document.getElementById('weight-input').value=state.weights[wk]||'';
+  const count=Object.keys(state.weights).length;
+  let sub='Log your weight. This is data, not a judgement.';
+  if(count===0) sub='First ever entry. This is your day-1 baseline.';
+  else if(lastW){
+    const trend=Object.values(state.weights);
+    if(trend.length>=2){const diff=(trend[trend.length-1]-trend[0]).toFixed(1);sub=`You've logged ${count} weeks. Total change: ${diff>0?'+':''}${diff} kg.`}
+  }
+  document.getElementById('weight-modal-sub').textContent=sub;
+  document.getElementById('weight-modal').classList.remove('hidden');
+}
+function saveWeight(){
+  const val=parseFloat(document.getElementById('weight-input').value);
+  if(!val||val<30||val>200){showToast('Enter a valid weight');return;}
+  const wk=getWeekKey(today);
+  state.weights[wk]=val;save();
+  document.getElementById('weight-modal').classList.add('hidden');
+  document.getElementById('weight-banner').style.display='none';
+  showToast('Weight saved ✓');
+  buildDayView();
+}
+function closeWeightModal(e){
+  if(e&&e.target!==document.getElementById('weight-modal'))return;
+  document.getElementById('weight-modal').classList.add('hidden');
+}
+
+// ═══════════════════════════════════════════
+//  WEEK VIEW
+// ═══════════════════════════════════════════
+function buildWeekView(){
+  const dn=dayNum(today);const sp=sprint(today);
+  document.getElementById('week-sub').textContent=`Week ${Math.ceil(dn/7)} of 13`;
+  // rings
+  const rings=document.getElementById('rings-row');rings.innerHTML='';
+  AREAS.forEach(a=>{
+    const score=state.areaScores[a.id]||a.score;
+    const circ=2*Math.PI*20,dash=(score/100)*circ;
+    const item=document.createElement('div');item.className='ring-item';
+    item.innerHTML=`<svg class="ring-svg" viewBox="0 0 52 52"><circle cx="26" cy="26" r="20" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/><circle cx="26" cy="26" r="20" fill="none" stroke="${a.color}" stroke-width="4" stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-dashoffset="${(circ*0.25).toFixed(1)}" stroke-linecap="round"/><text x="26" y="31" text-anchor="middle" font-size="13" font-family="DM Serif Display,serif" fill="${a.color}">${score}</text></svg><div class="ring-label">${a.name}</div>`;
+    rings.appendChild(item);
+  });
+  // training
+  const sched=sp===1?TRAINING.s1:sp===2?TRAINING.s2:TRAINING.s3;
+  const todayDow=dow(today);
+  document.getElementById('training-row').innerHTML=sched.map((s,i)=>`<div class="week-cell ${s.type}${i===todayDow?' today-cell':''}"><div class="wc-icon">${s.icon}</div><div class="wc-text">${s.text}</div></div>`).join('');
+  document.getElementById('training-legend').textContent=sp===1?'3 runs + 2 strength · ~2.5h/week':sp===2?'4 runs + 2 strength · intervals added':'4–5 runs + 2 strength · 90-min Sunday long run';
+  // habits
+  const weekStart=new Date(today);weekStart.setDate(today.getDate()-dow(today));
+  document.getElementById('weekly-habits').innerHTML=HABITS.map(h=>{
+    const dots=Array.from({length:7},(_,i)=>{
+      const dd=new Date(weekStart);dd.setDate(weekStart.getDate()+i);
+      const k=dkey(dd)+':'+h.id;const done=!!state.habits[k];
+      return `<div class="habit-dot${done?' done':''}" onclick="toggleHabit('${dkey(dd)}','${h.id}')">${done?'✓':''}</div>`;
+    }).join('');
+    return `<div class="habit-row"><div class="habit-name">${h.name}</div><div class="habit-dots">${dots}</div></div>`;
+  }).join('');
+  // weekly note
+  const wk=getWeekKey(today);
+  document.getElementById('weekly-note').value=state.weeklyNotes[wk]||'';
+}
+function toggleHabit(dk,hid){
+  const k=dk+':'+hid;if(state.habits[k])delete state.habits[k];else{state.habits[k]=true;showToast('Habit logged ✓')}
+  save();buildWeekView();
+}
+function saveWeeklyNote(v){const wk=getWeekKey(today);state.weeklyNotes[wk]=v;save()}
+
+// ═══════════════════════════════════════════
+//  MONTH VIEW
+// ═══════════════════════════════════════════
+function buildMonthView(){
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('month-name').textContent=MONTHS[viewMonth.m];
+  document.getElementById('month-sub').textContent=`${MONTHS[viewMonth.m]} · Sprint ${sprint(today)}`;
+  // calendar
+  const first=new Date(viewMonth.y,viewMonth.m,1);
+  const last=new Date(viewMonth.y,viewMonth.m+1,0);
+  const startDow=dow(first);let html='';
+  for(let i=0;i<startDow;i++)html+='<div class="mc-day empty"></div>';
+  for(let d2=1;d2<=last.getDate();d2++){
+    const dd=new Date(viewMonth.y,viewMonth.m,d2);
+    const dk2=dkey(dd);const isT=dk2===dkey(today);
+    const hasDone=Object.keys(state.doneTasks).some(k=>k.startsWith(dk2));
+    const hasW=!!state.weights[getWeekKey(dd)]&&dow(dd)===0;
+    html+=`<div class="mc-day${isT?' today-cal':''}${hasDone?' has-data':''}${hasW?' weight-day':''}">${d2}</div>`;
+  }
+  document.getElementById('month-grid').innerHTML=html;
+  // weight chart
+  drawWeightChart();
+  // area scores
+  document.getElementById('area-scores').innerHTML=AREAS.map(a=>{
+    const score=state.areaScores[a.id]||a.score;
+    return `<div class="score-card"><div class="sc-top"><div class="sc-name" style="color:${a.color}">${a.name}</div><div class="sc-score">${score}</div></div><div class="sc-bar"><div class="sc-fill" style="width:${score}%;background:${a.color}"></div></div></div>`;
+  }).join('');
+  // stats
+  document.getElementById('stat-done').textContent=Object.keys(state.doneTasks).length;
+  document.getElementById('stat-day').textContent=Math.max(1,dayNum(today));
+  let streak=0,check=new Date(today);
+  while(Object.keys(state.doneTasks).some(k=>k.startsWith(dkey(check)))){streak++;check.setDate(check.getDate()-1)}
+  document.getElementById('stat-streak').textContent=streak;
+}
+
+function drawWeightChart(){
+  const canvas=document.getElementById('weight-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||320,H=100;
+  canvas.width=W*2;canvas.height=H*2;ctx.scale(2,2);
+  ctx.clearRect(0,0,W,H);
+  const entries=Object.entries(state.weights).sort((a,b)=>a[0]<b[0]?-1:1);
+  document.getElementById('weight-chart-note').textContent=entries.length<2?'Log weight every Monday to see your trend':`${entries.length} entries · from ${entries[0][1]} kg to ${entries[entries.length-1][1]} kg`;
+  if(entries.length<2)return;
+  const vals=entries.map(e=>e[1]);
+  const minV=Math.min(...vals)-2,maxV=Math.max(...vals)+2;
+  const px=(i)=>i/(entries.length-1)*(W-24)+12;
+  const py=(v)=>H-10-(v-minV)/(maxV-minV)*(H-20);
+  // line
+  ctx.strokeStyle='rgba(168,213,162,0.6)';ctx.lineWidth=1.5;ctx.lineJoin='round';
+  ctx.beginPath();entries.forEach((e,i)=>{i===0?ctx.moveTo(px(i),py(e[1])):ctx.lineTo(px(i),py(e[1]))});ctx.stroke();
+  // dots
+  entries.forEach((e,i)=>{
+    ctx.beginPath();ctx.arc(px(i),py(e[1]),3,0,Math.PI*2);
+    ctx.fillStyle='#a8d5a2';ctx.fill();
+  });
+  // labels first and last
+  ctx.fillStyle='rgba(240,237,232,0.5)';ctx.font='10px DM Sans,sans-serif';ctx.textAlign='center';
+  ctx.fillText(vals[0]+'kg',px(0),H-1);
+  ctx.fillText(vals[vals.length-1]+'kg',px(entries.length-1),H-1);
+}
+
+function changeMonth(dir){viewMonth.m+=dir;if(viewMonth.m>11){viewMonth.m=0;viewMonth.y++}if(viewMonth.m<0){viewMonth.m=11;viewMonth.y--}buildMonthView()}
+
+// ═══════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════
+function buildSettings(){
+  document.getElementById('start-date-input').value=state.startDate;
+  const dn=dayNum(today);
+  document.getElementById('current-day-label').textContent=`Day ${dn}`;
+  document.getElementById('current-sprint-label').textContent=`Sprint ${sprint(today)} · ${sprint(today)===1?'Foundation':sprint(today)===2?'Build':'Prove it'}`;
+  document.getElementById('schedule-input').value=state.schedule||'';
+  document.getElementById('area-sliders').innerHTML=AREAS.map(a=>{
+    const score=state.areaScores[a.id]||a.score;
+    return `<div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:${a.color}">${a.name}</span><span style="font-size:13px;font-family:var(--serif)" id="sv-${a.id}">${score}</span></div><input type="range" min="0" max="100" value="${score}" style="width:100%;accent-color:${a.color}" oninput="updateScore('${a.id}',this.value)"></div>`;
+  }).join('');
+}
+function updateScore(id,val){state.areaScores[id]=parseInt(val);document.getElementById('sv-'+id).textContent=val;save()}
+function saveStartDate(v){state.startDate=v;save();buildDayView();buildSettings()}
+
+// ═══════════════════════════════════════════
+//  NAV + TOAST
+// ═══════════════════════════════════════════
+function switchView(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='day'){buildDayView();buildDateStrip()}
+  if(id==='week')buildWeekView();
+  if(id==='month')buildMonthView();
+  if(id==='settings')buildSettings();
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+buildDateStrip();buildDayView();
+</script>
+</body>
+</html>
